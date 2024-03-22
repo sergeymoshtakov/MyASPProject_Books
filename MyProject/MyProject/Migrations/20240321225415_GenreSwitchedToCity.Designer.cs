@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyProject.Data;
 
@@ -11,9 +12,11 @@ using MyProject.Data;
 namespace MyProject.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240321225415_GenreSwitchedToCity")]
+    partial class GenreSwitchedToCity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,7 +106,7 @@ namespace MyProject.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "a539dd41-c632-4f3b-adee-a6d7cdb060fc",
+                            ConcurrencyStamp = "15c01cfb-3abc-4258-8684-a46fc8b0ba67",
                             Email = "admin@gmail.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
@@ -111,7 +114,7 @@ namespace MyProject.Migrations
                             Password = "123456",
                             PhoneNumberConfirmed = false,
                             RoleId = 1,
-                            SecurityStamp = "1c37836f-835a-4428-b47e-f6f2dae8a954",
+                            SecurityStamp = "4b6c9fc4-c6d2-489c-af6a-f75eb6946621",
                             TwoFactorEnabled = false
                         });
                 });

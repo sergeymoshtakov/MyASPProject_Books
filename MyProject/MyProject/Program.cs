@@ -1,6 +1,11 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyProject.Data;
+using MyProject.Models;
+using MyProject.Services;
+using System.Security.Claims;
 
 namespace MyProject
 {
@@ -38,6 +43,25 @@ namespace MyProject
                 options.Cookie.Name = "MyProject_Session";
             });
 
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Register");
+                });
+
+            builder.Services.AddTransient<IAuthorizationHandler, AgeHandler>();
+
+            builder.Services.AddAuthorization(opts => {
+                opts.AddPolicy("AgeLimit",
+                    policy => policy.Requirements.Add(new AgeRequirement(18)));
+
+                opts.AddPolicy("OnlyForOdessaOrKherson", policy => {
+                    policy.RequireClaim(ClaimTypes.Locality, "Odessa", "Kherson");
+                });
+            });
+
+            builder.Services.AddControllersWithViews();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -52,8 +76,8 @@ namespace MyProject
 
             app.UseRouting();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+            app.UseAuthentication();    
+            app.UseAuthorization();     
 
             app.UseSession();
 

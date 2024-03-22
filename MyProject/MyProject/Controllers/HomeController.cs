@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyProject.Data;
 using MyProject.Models;
@@ -6,6 +7,7 @@ using System.Diagnostics;
 
 namespace MyProject.Controllers
 {
+
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -15,7 +17,7 @@ namespace MyProject.Controllers
             _logger = logger;
             _db = db;
         }
-
+        [Authorize(Roles = "admin, user")]
         public IActionResult Index(int pg = 1)
         {
             const int pageSize = 5;
@@ -30,7 +32,7 @@ namespace MyProject.Controllers
             this.ViewBag.Pager = pager;
             return View(data);
         }
-
+        [Authorize(Roles = "admin")]
         public IActionResult Privacy()
         {
             return View();
