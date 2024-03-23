@@ -1,6 +1,39 @@
-﻿@{
-    ViewData["Title"] = "Main page";
-}
-<h1>@ViewData["Title"]</h1>
+﻿@model IEnumerable<MyProject.Models.Book>
+@using MyProject.Models.ViewModel
 
-<p>Use this page to detail your site's privacy policy.</p>
+@{
+    ViewData["Title"] = "Index";
+    Pager pager = new Pager();
+    int pageNo = 0;
+    if (ViewBag.Pager != null)
+    {
+        pager = ViewBag.Pager;
+        pageNo = pager.CurrentPage;
+    }
+}
+
+<partial name="_Pager" model="@pager" />
+
+<table class="table table-bordered table-hover">
+    <tr class="text-center" style="background:lightblue">
+        <td>Id</td>
+        <td>Name</td>
+        <td>Author</td>
+        <td>Description</td>
+        <td>Category</td>
+        <td>Year</td>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Id</td>
+            <td>@item.Title</td>
+            <td>@item.Author</td>
+            <td>@item.Description</td>
+            <td>@item.Category</td>
+            <td>@item.Year</td>
+        </tr>
+    }
+</table>
+
+<partial name="_Pager" model="@pager" />

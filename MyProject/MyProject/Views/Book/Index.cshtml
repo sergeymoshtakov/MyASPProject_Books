@@ -1,41 +1,79 @@
-﻿@model IEnumerable<MyProject.Models.Book>
-@using MyProject.Models.ViewModel
-@using System.Security.Claims
-@{
-    ViewData["Title"] = "Index";
-    Pager pager = new Pager();
-    int pageNo = 0;
-    if (ViewBag.Pager != null)
-    {
-        pager = ViewBag.Pager;
-        pageNo = pager.CurrentPage;
-    }
-}
-<div>City: @User.FindFirst(x => x.Type == ClaimTypes.Locality).Value</div>
-<div>Age: @User.FindFirst(x => x.Type == ClaimTypes.DateOfBirth).Value</div>
+﻿@model List<MyProject.Models.Book>
 
-<partial name="_Pager" model="@pager" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List of Books</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>List of Books</h1>
 
-<table class="table table-bordered table-hover">
-    <tr class="text-center" style="background:lightblue">
-        <td>Id</td>
-        <td>Name</td>
-        <td>Author</td>
-        <td>Description</td>
-        <td>Category</td>
-        <td>Year</td>
-    </tr>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>@item.Id</td>
-            <td>@item.Title</td>
-            <td>@item.Author</td>
-            <td>@item.Description</td>
-            <td>@item.Category</td>
-            <td>@item.Year</td>
-        </tr>
-    }
-</table>
+        <!-- Форма для добавления новых книг -->
+        <form method="post" action="@Url.Action("AddBook", "Book")" class="mb-4">
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="author">Author</label>
+                <input type="text" class="form-control" id="author" name="author" required>
+            </div>
+            <div class="form-group">
+                <label for="year">Year</label>
+                <input type="number" class="form-control" id="year" name="year" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Book</button>
+        </form>
 
-<partial name="_Pager" model="@pager" />
+        <div class="form-group">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search books...">
+        </div>
+
+        <div class="row">
+            @foreach (var book in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">@book.Title</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@book.Author</h6>
+                            <p class="card-text">Year: @book.Year</p>
+                            <a href="@Url.Action("Edit", "Book", new { id = book.Id })" class="btn btn-primary">Edit</a>
+                            <a href="@Url.Action("Details", "Book", new { id = book.Id })" class="btn btn-secondary">Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <script>
+
+        function filterBooks() {
+            var input = document.getElementById('searchInput').value.toUpperCase();
+            var books = document.querySelectorAll('.card');
+
+            books.forEach(function (book) {
+                var title = book.querySelector('.card-title').innerText.toUpperCase();
+                var author = book.querySelector('.card-subtitle').innerText.toUpperCase();
+
+                if (title.indexOf(input) > -1 || author.indexOf(input) > -1) {
+                    book.style.display = '';
+                } else {
+                    book.style.display = 'none';
+                }
+            });
+        }
+
+        // Слушатель события для поля ввода поиска
+        document.getElementById('searchInput').addEventListener('input', filterBooks);
+
+        // Инициализация при загрузке страницы
+        window.onload = filterBooks;
+    </script>
+</body>
+</html>

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyProject.Data;
+using MyProject.Hubs;
 using MyProject.Models;
 using MyProject.Services;
 using System;
@@ -22,6 +23,8 @@ namespace MyProject
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddSignalR();
 
             // Adding configuration
             var configuration = builder.Configuration;
@@ -90,6 +93,8 @@ namespace MyProject
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            app.MapHub<UserHub>("/hubs/userCount");
 
             app.Run();
         }

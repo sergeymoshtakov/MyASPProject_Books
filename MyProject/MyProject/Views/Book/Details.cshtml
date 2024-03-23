@@ -1,0 +1,43 @@
+﻿@model MyProject.Models.ViewModel.BookDetailsViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Details</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">Book Details</h1>
+                <div>
+                    <h3>Title: @Model.Book.Title</h3>
+                    <p>Author: @Model.Book.Author</p>
+                    <p>Year: @Model.Book.Year</p>
+                    <p>Description: @Model.Book.Description</p>
+                    <p>Category: @Model.Book.Category</p>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-4">
+            <div class="card-body">
+                <h2 class="card-title">Comments</h2>
+                <ul class="list-group">
+                    @foreach (var comment in Model.Book.Comments)
+                    {
+                        <li class="list-group-item">@comment.Text</li>
+                    }
+                </ul>
+                <form method="post" asp-action="AddComment" asp-controller="Book">
+                    <input type="hidden" asp-for="Book.Id" />
+                    <textarea name="newCommentText" class="form-control mt-3" rows="3" placeholder="Add a comment"></textarea>
+                    <button type="submit" class="btn btn-primary mt-3">Add Comment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

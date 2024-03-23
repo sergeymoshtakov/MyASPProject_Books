@@ -6,97 +6,89 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
 
 namespace MyProject.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private AppDbContext _db;
-        public AccountController(AppDbContext db)
+
+        public AccountController(AppDbContext db, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
             _db = db;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
+
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginModel model)
         {
             if (ModelState.IsValid)
             {
-                ApplicationUser user = await _db.Users
-                    .Include(u => u.Role)
-                    .FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
+                ApplicationUser user = await _userManager.FindByEmailAsync(model.Email);
                 if (user != null)
                 {
-                    await Authenticate(user); // аутентификация
+                    var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
 
-                    return RedirectToAction("Index", "Home");
+                    if (result.Succeeded)
+                        return RedirectToAction("Index", "Home");
                 }
                 ModelState.AddModelError("", "Wrong login or password");
             }
             return View(model);
         }
+
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterModel model)
         {
             if (ModelState.IsValid)
             {
-                ApplicationUser user = await _db.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+                ApplicationUser user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null)
                 {
-                    // добавляем пользователя в бд
                     user = new ApplicationUser
                     {
-                        Name = model.Name,
+                        UserName = model.Name,
                         Email = model.Email,
-                        Password = model.Password,
                         Year = model.Year,
                         City = model.City,
                         ProfilePhotoPath = model.ProfilePhotoPath
                     };
-                    _db.Users.Add(user);
-                    await _db.SaveChangesAsync();
 
-                    await Authenticate(user);
+                    var result = await _userManager.CreateAsync(user, model.Password);
 
-                    return RedirectToAction("Index", "Home");
+                    if (result.Succeeded)
+                        return RedirectToAction("Index", "Home");
                 }
                 else
-                    ModelState.AddModelError("", "Wrong login or password");
+                {
+                    ModelState.AddModelError("", "User with this email already exists");
+                }
             }
             return View(model);
         }
 
-        private async Task Authenticate(ApplicationUser user)
-        {
-            // создаем один claim
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Email),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, "user"),
-                new Claim(ClaimTypes.Locality, user.City),
-                new Claim(ClaimTypes.DateOfBirth, user.Year.ToString())
-            };
-            // создаем объект ClaimsIdentity
-            ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
-                ClaimsIdentity.DefaultRoleClaimType);
-            // установка аутентификационных куки
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
-        }
-
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
         }
     }

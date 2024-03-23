@@ -7,15 +7,19 @@ using Microsoft.AspNetCore.Http;
 using System;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using MyProject.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace MyProject.Controllers
 {
     public class AdminController : Controller
     {
         private readonly AppDbContext _db;
-        public AdminController(AppDbContext db)
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public AdminController(AppDbContext db, UserManager<ApplicationUser> userManager)
         {
             _db = db;
+            _userManager = userManager;
         }
         public IActionResult Index()
         {
@@ -43,7 +47,7 @@ namespace MyProject.Controllers
                 }
                 if (!string.IsNullOrEmpty(searchValue))
                 {
-                    customerData = customerData.Where(m => m.Name.Contains(searchValue)
+                    customerData = customerData.Where(m => m.UserName.Contains(searchValue)
                                                 || m.Email.Contains(searchValue));
                 }
                 recordsTotal = customerData.Count();
@@ -58,33 +62,58 @@ namespace MyProject.Controllers
         }
 
         [HttpGet]
-        public ActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(string id)
         {
-            try
+            if (id == null)
             {
-                var customer = _db.Users.FirstOrDefault(u => u.Id == id);
-                return View(customer);
+                return NotFound();
             }
-            catch (Exception)
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
             {
-                return StatusCode(500, "Internal server error");
+                return NotFound();
             }
+
+            return View(user);
         }
 
         [HttpPost]
-        public IActionResult Edit(ApplicationUser user)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, ApplicationUser user)
         {
-            try
+            if (id != user.Id)
             {
-                _db.Users.Update(user);
-                _db.SaveChanges();
-                return RedirectToAction("Index");
+                return NotFound();
             }
-            catch (Exception ex)
+
+            if (ModelState.IsValid)
             {
-                return StatusCode(500, "Internal server error");
+                var existingUser = await _userManager.FindByIdAsync(id);
+                if (existingUser == null)
+                {
+                    return NotFound();
+                }
+
+                existingUser.UserName = user.UserName;
+                existingUser.Email = user.Email;
+                // Обновите другие поля, которые вы хотите редактировать
+
+                var result = await _userManager.UpdateAsync(existingUser);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home"); // Перенаправьте пользователя после успешного редактирования
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
             }
+
+            return View(user);
         }
+
 
         [HttpPost]
         public JsonResult DeleteCustomer(int ID)

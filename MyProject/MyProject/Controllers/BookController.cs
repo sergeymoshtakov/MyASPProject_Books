@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MyProject.Data;
+using MyProject.Models;
 using MyProject.Models.ViewModel;
+using System.Linq;
 
 namespace MyProject.Controllers
 {
@@ -12,20 +15,81 @@ namespace MyProject.Controllers
         {
             _db = db;
         }
-        [Authorize(Policy = "AgeLimit")] // user must atleast be 18 years old
-        public IActionResult Index(int pg = 1)
+
+        public IActionResult Index()
         {
-            const int pageSize = 5;
-            if (pg < 1) pg = 1;
-
-            var allBooks = _db.Books.ToList();
-
-            int recsCount = allBooks.Count();
-            var pager = new Pager(recsCount, pg, pageSize);
-            int recSkip = (pg - 1) * pageSize;
-            var data = allBooks.Skip(recSkip).Take(pageSize).ToList();
-            this.ViewBag.Pager = pager;
-            return View(data);
+            var books = _db.Books.ToList();
+            return View(books);
         }
+        public IActionResult Details(int id)
+        {
+            var book = _db.Books.Include(b => b.Comments).FirstOrDefault(b => b.Id == id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new BookDetailsViewModel
+            {
+                Book = book,
+                NewCommentText = "" // Инициализируем пустую строку для нового комментария
+            };
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddComment(int id, string newCommentText)
+        {
+            var book = _db.Books.Include(b => b.Comments).FirstOrDefault(b => b.Id == id);
+            if (book != null)
+            {
+                var comment = new Comment { Text = newCommentText, BookId = id };
+                if (book.Comments == null)
+                {
+                    book.Comments = new List<Comment>(); // Инициализируем список комментариев, если он еще не инициализирован
+                }
+                book.Comments.Add(comment); // Добавляем комментарий к списку комментариев книги
+                _db.Comments.Add(comment); // Добавляем комментарий в контекст данных
+                await _db.SaveChangesAsync(); // Сохраняем изменения в базе данных
+            }
+
+            return RedirectToAction("Details", new { id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddBook(Book book)
+        {
+            if (ModelState.IsValid)
+            {
+                _db.Books.Add(book);
+                await _db.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            return View(book);
+        }
+
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var book = _db.Books.Find(id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+            return View(book);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(Book book)
+        {
+            if (ModelState.IsValid)
+            {
+                _db.Books.Update(book);
+                await _db.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            return View(book);
+        }
+
     }
 }

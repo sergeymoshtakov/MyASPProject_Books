@@ -4,41 +4,37 @@
 
 <form asp-action="Register" asp-controller="Account" asp-anti-forgery="true">
     <div class="validation" asp-validation-summary="ModelOnly"></div>
-    <div>
-        <div>
-            <label asp-for="Name">Enter name</label><br />
-            <input type="text" asp-for="Name" />
-            <span asp-validation-for="Name" />
-        </div>
-        <div>
-            <label asp-for="Email">Enter Email</label><br />
-            <input type="text" asp-for="Email" />
-            <span asp-validation-for="Email" />
-        </div>
-        <div>
-            <label asp-for="Password">Enter password</label><br />
-            <input asp-for="Password" />
-            <span asp-validation-for="Password" />
-        </div>
-        <div>
-            <label asp-for="ConfirmPassword">Repeat password</label><br />
-            <input asp-for="ConfirmPassword" />
-            <span asp-validation-for="ConfirmPassword" />
-        </div>
-        <div>
-            <label asp-for="City">Enter your city</label><br />
-            <input type="text" asp-for="City" />
-        </div>
-        <div>
-            <label asp-for="ProfilePhotoPath">Enter profile photo</label><br />
-            <input type="text" asp-for="ProfilePhotoPath" />
-        </div>
-        <div>
-            <label asp-for="Year">Enter year of birth</label><br />
-            <input type="text" asp-for="Year" />
-        </div>
-        <div>
-            <input type="submit" value="Registration" />
-        </div>
+    <div class="form-group">
+        <label asp-for="Name">Enter Name</label><br />
+        <input type="text" asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
     </div>
+    <div class="form-group">
+        <label asp-for="Email">Enter Email</label><br />
+        <input type="text" asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Password">Enter Password</label><br />
+        <input type="password" asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="ConfirmPassword">Repeat Password</label><br />
+        <input type="password" asp-for="ConfirmPassword" class="form-control" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="City">Enter Your City</label><br />
+        <input type="text" asp-for="City" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="ProfilePhotoPath">Enter Profile Photo</label><br />
+        <input type="text" asp-for="ProfilePhotoPath" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Year">Enter Year of Birth</label><br />
+        <input type="text" asp-for="Year" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
 </form>
