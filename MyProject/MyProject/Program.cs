@@ -1,10 +1,15 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using MyProject.Data;
 using MyProject.Models;
 using MyProject.Services;
+using System;
 using System.Security.Claims;
 
 namespace MyProject
@@ -27,7 +32,7 @@ namespace MyProject
                 options.UseSqlServer(connectionString));
 
             // Configure Identity
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 // Your identity options here
             })
@@ -46,7 +51,7 @@ namespace MyProject
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
-                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Register");
+                    options.LoginPath = new PathString("/Account/Register");
                 });
 
             builder.Services.AddTransient<IAuthorizationHandler, AgeHandler>();
@@ -60,7 +65,8 @@ namespace MyProject
                 });
             });
 
-            builder.Services.AddControllersWithViews();
+            // Remove redundant call to AddControllersWithViews()
+            // builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
@@ -76,8 +82,8 @@ namespace MyProject
 
             app.UseRouting();
 
-            app.UseAuthentication();    
-            app.UseAuthorization();     
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseSession();
 

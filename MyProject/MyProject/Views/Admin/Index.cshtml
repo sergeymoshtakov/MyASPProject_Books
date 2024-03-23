@@ -1,0 +1,88 @@
+﻿<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.6/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.11.6/js/jquery.dataTables.min.js"></script>
+@{
+    ViewData["Title"] = "Admin Page";
+}
+
+<div class="container">
+    <br />
+    <div style="width:90%; margin:0 auto;">
+        <table id="userDatatable" class="table table-striped table-bordered dt-responsive nowrap" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                    <th>Role</th>
+                    <th>City</th>
+                    <th>Profile photo</th>
+                    <th>Date Of Birth</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<script>
+    jQuery(document).ready(function ($) {
+        $("#userDatatable").DataTable({
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "ajax": {
+                "url": "/Admin/GetUsers",
+                "type": "POST",
+                "datatype": "json"
+            },
+            "columnDefs": [{
+                "targets": [0],
+                "visible": false,
+                "searchable": false
+            }],
+            "columns": [
+                { "data": "id", "name": "Id", "autoWidth": true },
+                { "data": "name", "name": "Name", "autoWidth": true },
+                { "data": "email", "name": "Email", "autoWidth": true },
+                { "data": "password", "name": "Password", "autoWidth": true },
+                { "data": "roleId", "name": "Role", "autoWidth": true },
+                { "data": "city", "name": "City", "autoWidth": true },
+                { "data": "profilePhotoPath", "name": "Profile Photo", "autoWidth": true },
+                { "data": "year", "name": "Year", "autoWidth": true },
+                {
+                    "render": function (data, type, full, meta) { return '<a class="btn btn-info" href="/Admin/Edit/' + full.id + '">Edit</a>'; }
+                },
+                {
+                    data: null, render: function (data, type, row) {
+                        return "<a href='#' class='btn btn-danger' onclick=DeleteData('" + row.id + "'); >Delete</a>";
+                    }
+                },
+            ]
+        });
+    });
+
+    function DeleteData(CustomerID) {
+        if (confirm("Are you sure you want to delete ...?")) {
+            Delete(CustomerID);
+        }
+        else {
+            return false;
+        }
+    }
+    function Delete(CustomerID) {
+        var url = '@Url.Content("/Admin/DeleteCustomer")';
+        $.post(url, { ID: CustomerID }, function (data) {
+            if (data == "Deleted") {
+                alert("User was deleted !");
+                oTable = $('#userDatatable').DataTable();
+                oTable.draw();
+            }
+            else {
+                alert("Something Went Wrong!");
+            }
+        });
+    }
+
+</script>
